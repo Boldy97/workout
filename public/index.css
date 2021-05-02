@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  background-color: #000000;
+  color: #d8d8d8;
+}
+
+#main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+#main > * {
+  margin: 3rem;
+  padding: 2rem;
+  background: #1f1f1f;
+  border-radius: .25rem;
+}
+
+#last-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 2rem;
+  font-family: sans-serif;
+}

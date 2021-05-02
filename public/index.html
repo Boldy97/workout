@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="index.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="index.js"></script>
+  </head>
+  <body>
+    <!-- TODO -->
+    <div id="main">
+      <div id="last-action">
+        <span id="last-action-name"></span>
+        <span id="last-action-description"></span>
+        <span id="last-action-timer"></span>
+      </div>
+      <table id="points"></table>
+      <div id="new-action">
+        <table>
+          <tr>
+            <td>Name</td>
+            <td><input id="input-name" type="text"></td>
+          </tr>
+          <tr>
+            <td>What</td>
+            <td><input id="input-type" type="text"></td>
+          </tr>
+          <tr>
+            <td>Count</td>
+            <td><input id="input-count" type="number"></td>
+          </tr>
+          <tr>
+            <td>Multiplier</td>
+            <td><input id="input-multiplier" type="number"></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><button style="float:right" onclick="submit()">Submit</button></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
