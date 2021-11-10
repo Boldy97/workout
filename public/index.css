@@ -1,15 +1,15 @@
 body {
   margin: 0;
-  background-color: #000000;
+  background-color: black;
   color: #d8d8d8;
 }
 
 #main {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-flow: row wrap;
   justify-content: space-between;
-  height: 100%;
+  align-items: center;
+  width: 100%;
 }
 
 #main > * {
@@ -17,6 +17,14 @@ body {
   padding: 2rem;
   background: #1f1f1f;
   border-radius: .25rem;
+}
+
+#main > .full {
+  flex-basis: 100%;
+}
+
+#main > .white {
+  background-color: white;
 }
 
 #last-action {

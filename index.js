@@ -3,20 +3,22 @@ const bodyParser = require('body-parser');
 const binarySearch = require('binarysearch');
 const fs = require('fs').promises;
 const argv = require('minimist')(process.argv.slice(2));
+const dayjs = require('dayjs');
 
 const DATA_PATH = 'data/data.json';
 const PORT = argv.port || 3000;
 const INTERVAL = 1000 * 60 * (argv.interval || 60);
 const DELAY = 1000 * 60 * (argv.delay || 15);
 let DATA = {
+  players: [],
   actions: [],
-  points: {}
+  pointsByName: {},
+  actionCountsByName: {}
 };
 
 async function start() {
   await loadData();
   setupWebserver();
-  setInterval(updatePoints, 1000);
 }
 
 async function loadData() {
@@ -39,12 +41,6 @@ function setupWebserver() {
   app.use(bodyParser.json());
   app.use(express.static('public'));
 
-  app.post('/api/action', (req, res) => {
-    let action = req.body;
-    action = addAction(action);
-    res.send(action);
-  });
-
   app.get('/api/status', (req, res) => {
     let cutoff = req.query.time || Date.now() - 1000 * 60 * 60 * 24 * 7; // max 7 days ago
     let index = binarySearch.closest(DATA.actions, cutoff, (action, cutoff) => action.time - cutoff);
@@ -54,9 +50,17 @@ function setupWebserver() {
       newActions = DATA.actions.slice(index);
     }
     res.send({
-      points: DATA.points,
-      actions: newActions
+      players: DATA.players,
+      actions: newActions,
+      pointsByName: DATA.pointsByName,
+      actionCountsByName: DATA.actionCountsByName
     });
+  });
+
+  app.post('/api/action', (req, res) => {
+    let action = req.body;
+    action = addAction(action);
+    res.send(action);
   });
 
   app.listen(PORT, () => {
@@ -66,34 +70,50 @@ function setupWebserver() {
 
 function addAction(action) {
   action.time = Date.now();
-  action.timeVictory = action.time + INTERVAL;
-  action.timeDelay = action.time + DELAY;
-  assignPointForNewAction(action);
+  // actions
   DATA.actions.push(action);
+  // pointsByName
+  if(!DATA.pointsByName[action.name]) DATA.pointsByName[action.name] = 0;
+  const gainedPoints = getGainedPoints(action.name);
+  console.log(`Giving ${gainedPoints} point(s) to ${action.name}`);
+  DATA.pointsByName[action.name] += gainedPoints;
+  // actionCountsByName
+  const date =dayjs(action.time).format('YYYY-MM-DD');
+  const actionCount = getActionCountForNameAndDate(action.name, date);
+  actionCount.count += gainedPoints;
+  actionCount.cumulativeCount += gainedPoints;
+  // end
   saveData();
   return action;
 }
 
-function assignPointForNewAction(action) {
-  if(!DATA.points[action.name]) DATA.points[action.name] = 0;
-  const previousAction = DATA.actions[DATA.actions.length - 1];
-  if(previousAction && previousAction.name === action.name && Date.now() < previousAction.timeDelay) return;
-  givePoint(action.name);
+function isLeader(name) {
+  return DATA.players.find(player => player.name === name).leader;
 }
 
-function updatePoints() {
-  const action = DATA.actions[DATA.actions.length - 1];
-  if(!action) return;
-  if(action.assignedPoint) return;
-  if(Date.now() < action.timeVictory) return;
-  givePoint(action.name);
-  action.assignedPoint = true;
-  saveData();
+function getGainedPoints(name) {
+  return isLeader(name) ? DATA.players.length - 1 : 1;
 }
 
-function givePoint(name) {
-  console.log('Giving point to', name, '!');
-  DATA.points[name]++;
+function getActionCountForNameAndDate(name, date) {
+  if(!DATA.actionCountsByName[name]) {
+    DATA.actionCountsByName[name] = [newActionCount(date)];
+  }
+  let last = DATA.actionCountsByName[name][DATA.actionCountsByName[name].length-1];
+  if(last.date !== date) {
+    last = newActionCount(date);
+    DATA.actionCountsByName[name].push(last);
+  }
+  return last;
+}
+
+function newActionCount(date) {
+  return {
+    date: date,
+    time: new Date(date).getTime(),
+    count: 0,
+    cumulativeCount: 0
+  };
 }
 
 start();

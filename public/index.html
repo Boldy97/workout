@@ -1,24 +1,43 @@
 <html>
   <head>
     <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.css" integrity="sha512-5HktH3p+qBNLzxpOLnpICH2uwArYE/Fi7fdKCQee15piDqN3X3Q1iqo8D43oc8DJgYP4xxA7sdEjNCfmeLLYeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js" integrity="sha512-oJp0DdQuQQrRsKVly+Ww6fAN1GwJN7d1bi8UubpEbzDUh84WrJ2CFPBnT4LqBCcfqTcHR5OGXFFhaPe3g1/bzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nvd3/1.8.6/nv.d3.min.js" integrity="sha512-ldXL88WIgBA+vAsJu2PepKp3VUvwuyqmXKEbcf8rKeAI56K8GZMb2jfKSm1a36m5AfUzyDp3TIY0iVKY8ciqSg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="index.js"></script>
   </head>
   <body>
     <!-- TODO -->
     <div id="main">
-      <div id="last-action">
-        <span id="last-action-name"></span>
-        <span id="last-action-description"></span>
-        <span id="last-action-timer"></span>
-      </div>
-      <table id="points"></table>
-      <div id="new-action">
+      <div id="name-select" style="display: none">
         <table>
           <tr>
-            <td>Name</td>
-            <td><input id="input-name" type="text"></td>
+            <td>
+              <select id="name-select-dropdown">
+                <option>Pancake</option>
+                <option>PJ</option>
+                <option>Quinten</option>
+              </select>
+            </td>
           </tr>
+          <tr>
+            <td><button style="float:right" onclick="selectName()">Select</button></td>
+          </tr>
+        </table>
+      </div>
+      <div id="chart" class="full white" style="display: none">
+        <svg></svg>
+      </div>
+      <div id="last-action" style="display: none">
+        <span id="last-action-name"></span>
+        <span id="last-action-description"></span>
+        <span id="last-action-time-day"></span>
+        <span id="last-action-time-time"></span>
+      </div>
+      <table id="points" style="display: none"></table>
+      <div id="new-action" style="display: none">
+        <table>
           <tr>
             <td>What</td>
             <td><input id="input-type" type="text"></td>
