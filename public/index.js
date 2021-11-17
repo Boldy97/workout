@@ -40,7 +40,7 @@ async function updateView(hasNewData) {
 
 async function updateViewShowHide() {
   $('#name-select')[name?'hide':'show']();
-  //$('#chart')[name?'show':'hide']();
+  $('#chart')[name && !isLeader(name)?'show':'hide']();
   $('#last-action')[name?'show':'hide']();
   $('#points')[(name && !isLeader(name))?'show':'hide']();
   $('#new-action')[name?'show':'hide']();
@@ -86,13 +86,11 @@ async function updateViewGraph(hasNewData) {
     return;
   }
   nv.addGraph(function() {
-    var chart = nv.models.cumulativeLineChart()
+    var chart = nv.models.lineChart()
         .useInteractiveGuideline(true)
         .x(function(d) { return d.time })
         .y(function(d) { return d.cumulativeCount })
-        .color(d3.scale.category10().range())
-        .duration(300)
-        .clipVoronoi(false);
+        .color(d3.scale.category10().range());
 
     chart.xAxis.tickFormat(function(d) {
       return d3.time.format('%Y-%m-%d')(new Date(d))
@@ -102,7 +100,6 @@ async function updateViewGraph(hasNewData) {
         .datum(getChartData())
         .call(chart);
 
-    //TODO: Figure out a good way to do this automatically
     nv.utils.windowResize(chart.update);
 
     return chart;
@@ -138,15 +135,50 @@ function isLeader(name) {
   return status.players.find(player => player.name === name).leader;
 }
 
+function clone(data) {
+  return JSON.parse(JSON.stringify(data));
+}
+
 function getChartData() {
   const result = [];
+  const combined = {
+    key: 'Combined',
+    values: []
+  };
   for(let name of Object.keys(status.actionCountsByName)) {
     const actionCounts = status.actionCountsByName[name];
     result.push({
       key: name,
       values: actionCounts
     });
+    if(!isLeader(name)) {
+      mergeData(combined.values, actionCounts);
+    }
   }
-  // TODO combined
+  result.push(combined);
   return result;
+}
+
+function mergeData(target, source) {
+  source = clone(source);
+  if(!target.length) {
+    target.push(...source);
+    return;
+  }
+  for(let i in source) {
+    let found = false;
+    for(let j in target) {
+      if(source[i].date === target[j].date) {
+        found = true;
+        for(let k=j;k<target.length;k++) {
+          target[k].cumulativeCount += source[i].count;
+        }
+        break;
+      }
+    }
+    if(!found) {
+      source[i].cumulativeCount = target[target.length-1].cumulativeCount + source[i].count;
+      target.push(source[i]);
+    }
+  }
 }

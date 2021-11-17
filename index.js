@@ -101,7 +101,9 @@ function getActionCountForNameAndDate(name, date) {
   }
   let last = DATA.actionCountsByName[name][DATA.actionCountsByName[name].length-1];
   if(last.date !== date) {
-    last = newActionCount(date);
+    const last_ = newActionCount(date);
+    last_.cumulativeCount = last.cumulativeCount;
+    last = last_;
     DATA.actionCountsByName[name].push(last);
   }
   return last;
