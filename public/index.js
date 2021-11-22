@@ -3,6 +3,7 @@ $(document).ready(init);
 let name = null;
 const actions = [];
 let status = {};
+let notificationsEnabled = false;
 
 async function init() {
   setDefaultValues();
@@ -13,12 +14,16 @@ async function init() {
 
 async function requestNotificationPermission() {
   const permission = await window.Notification.requestPermission();
-  if(permission !== 'granted') {
-    throw new Error('Permission not granted for Notification');
+  notificationsEnabled = permission === 'granted';
+  if(!notificationsEnabled) {
+    console.error('notifications not enabled');
   }
 }
 
 function showNotification(action) {
+  if(!notificationsEnabled) {
+    return;
+  }
   new Notification(`A new rep was logged by ${action.name}!`, {
     body: getDescriptionForAction(action)
   });
