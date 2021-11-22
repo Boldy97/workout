@@ -3,20 +3,12 @@ $(document).ready(init);
 let name = null;
 const actions = [];
 let status = {};
-let registration;
 
 async function init() {
   setDefaultValues();
+  await requestNotificationPermission();
   setInterval(update, 1000);
   update(true);
-  registration = await registerServiceWorker();
-  await requestNotificationPermission();
-}
-
-async function registerServiceWorker() {
-  const registration = await navigator.serviceWorker.register('service.js');
-  registration.active.postMessage('hello world');
-  return registration;
 }
 
 async function requestNotificationPermission() {
@@ -26,9 +18,10 @@ async function requestNotificationPermission() {
   }
 }
 
-function showLocalNotification(title, body, swRegistration) {
-  const options = { body };
-  registration.showNotification(title, options);
+function showNotification(action) {
+  new Notification(`A new rep was logged by ${action.name}!`, {
+    body: getDescriptionForAction(action)
+  });
 }
 
 async function setDefaultValues() {
@@ -42,11 +35,7 @@ async function setDefaultValues() {
 async function update(skipNotification) {
   const hasNewData = await fetchStatus();
   if(hasNewData && !skipNotification) {
-    const action = actions[actions.length-1];
-    console.log(action);
-    registration.showNotification(`A new rep was logged by ${action.name}!`, {
-      body: getDescriptionForAction(action)
-    });
+    showNotification(actions[actions.length-1]);
   }
   await updateView(hasNewData);
 }
