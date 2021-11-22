@@ -3,11 +3,32 @@ $(document).ready(init);
 let name = null;
 const actions = [];
 let status = {};
+let registration;
 
-function init() {
+async function init() {
   setDefaultValues();
   setInterval(update, 1000);
-  update();
+  update(true);
+  registration = await registerServiceWorker();
+  await requestNotificationPermission();
+}
+
+async function registerServiceWorker() {
+  const registration = await navigator.serviceWorker.register('service.js');
+  registration.active.postMessage('hello world');
+  return registration;
+}
+
+async function requestNotificationPermission() {
+  const permission = await window.Notification.requestPermission();
+  if(permission !== 'granted') {
+    throw new Error('Permission not granted for Notification');
+  }
+}
+
+function showLocalNotification(title, body, swRegistration) {
+  const options = { body };
+  registration.showNotification(title, options);
 }
 
 async function setDefaultValues() {
@@ -18,8 +39,15 @@ async function setDefaultValues() {
   $('#input-multiplier').val(1);
 }
 
-async function update() {
+async function update(skipNotification) {
   const hasNewData = await fetchStatus();
+  if(hasNewData && !skipNotification) {
+    const action = actions[actions.length-1];
+    console.log(action);
+    registration.showNotification(`A new rep was logged by ${action.name}!`, {
+      body: getDescriptionForAction(action)
+    });
+  }
   await updateView(hasNewData);
 }
 
@@ -50,7 +78,7 @@ async function updateViewLastAction() {
   const action = actions[actions.length-1];
   if(!action) return;
   $('#last-action-name').text(action.name);
-  const description = (action.multiplier !== 1 ? `${action.multiplier}x` : '') + `${action.count} ${action.type}`;
+  const description = getDescriptionForAction(action);
   $('#last-action-description').text(description);
   $('#last-action-time-day').text(new Date(action.time).toLocaleDateString());
   $('#last-action-time-time').text(new Date(action.time).toLocaleTimeString());
@@ -137,6 +165,10 @@ function isLeader(name) {
 
 function clone(data) {
   return JSON.parse(JSON.stringify(data));
+}
+
+function getDescriptionForAction(action) {
+  return (action.multiplier !== 1 ? `${action.multiplier}x` : '') + `${action.count} ${action.type}`;
 }
 
 function getChartData() {
